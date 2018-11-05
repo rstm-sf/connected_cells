@@ -7,8 +7,7 @@
 #include "cube.h"
 #include "disjoint_set.h"
 
-void make_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube);
-void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube);
+void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube);
 
 int main() {
     using myclock_t = std::chrono::system_clock;
@@ -18,73 +17,116 @@ int main() {
     Cube cube{};
     DisjointSet<std::uint64_t> disjoint_set{};
 
-
-    std::cout << "Start make sets" << std::endl;
+    // Создание структуры из множеств связынных индексов
+    std::cout << "Start make and union sets" << std::endl;
     std::chrono::time_point<myclock_t> start = myclock_t::now();
 
-    make_sets(disjoint_set, cube);
+    make_union_sets(disjoint_set, cube);
 
     double time1 = duration_t(myclock_t::now() - start).count();
-    std::cout << "Stop make sets" << std::endl;
+    std::cout << "Stop make and union sets" << std::endl;
     std::cout << "Time used: " << time1 << " (sec.)\n" << std::endl;
 
-
-    std::cout << "Start union sets" << std::endl;
-    start = myclock_t::now();
-
-    union_sets(disjoint_set, cube);
-
-    double time2 = duration_t(myclock_t::now() - start).count();
-    std::cout << "Stop union sets" << std::endl;
-    std::cout << "Time used: " << time2 << " (sec.)\n" << std::endl;
-
-
-    std::cout << "Start create areas" << std::endl;
+    // Получение множеств связанных индексов в виде map
+    std::cout << "Start get areas" << std::endl;
     start = myclock_t::now();
 
     map_areas_t areas {disjoint_set.get_areas()};
 
-    double time3 = duration_t(myclock_t::now() - start).count();
-    std::cout << "Stop union sets" << std::endl;
-    std::cout << "Time used: " << time3 << " (sec.)\n" << std::endl;
+    double time2 = duration_t(myclock_t::now() - start).count();
+    std::cout << "Stop get areas" << std::endl;
+    std::cout << "Time used: " << time2 << " (sec.)\n" << std::endl;
 
 
-    std::cout << "Time used sum(1, 2, 3): " << time1 + time2 + time3;
+    std::cout << "Time used sum(1, 2): " << time1 + time2;
     std::cout << " (sec.)" << std::endl;
+
     return 0;
 }
 
-void make_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
-    const std::uint64_t size = cube.get_nx() * cube.get_ny() * cube.get_nz();
-    // Сохранение индексов ячеек со значением равным 1
-    for (std::uint64_t idx = 0; idx < size; ++idx)
-        if (cube.get(idx))
-            disjoint_set.make_set(idx);
-}
-
-void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
+void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
     const std::uint64_t nx = cube.get_nx();
     const std::uint64_t ny = cube.get_ny();
     const std::uint64_t nz = cube.get_nz();
-    std::uint64_t idx{0};
+
+    // Заполнение и объединение плоскости XZ при j = 0
     for (std::uint64_t k = 0; k < nz; ++k)
-        for (std::uint64_t j = 0; j < ny; ++j)
-            for (std::uint64_t i = 0; i < nx; ++i) {
-                
-                if (disjoint_set.count(idx)) {
-                    std::uint64_t idx_right   = idx + 1;
-                    std::uint64_t idx_down    = idx + nx;
-                    std::uint64_t idx_forward = idx + nx * ny;
+        for (std::uint64_t i = 0; i < nx; ++i) {
+            std::uint64_t idx = i + k * nx * ny;
+            if (cube.get(idx)) {
+                disjoint_set.make_set(idx);
 
-                    if (disjoint_set.count(idx_right)   && i < nx - 1)
-                        disjoint_set.union_sets(idx, idx_right);
-
-                    if (disjoint_set.count(idx_down)    && j < ny - 1)
-                        disjoint_set.union_sets(idx, idx_down);
-
-                    if (disjoint_set.count(idx_forward) && k < nz - 1)
-                        disjoint_set.union_sets(idx, idx_forward);
+                if (i > 0) {
+                    std::uint64_t idx_left = idx - 1;
+                    if (disjoint_set.count(idx_left))
+                        disjoint_set.union_sets(idx, idx_left);
                 }
-                ++idx;
+
+                if (k > 0) {
+                    std::uint64_t idx_backward = idx - nx * ny; 
+                    if (disjoint_set.count(idx_backward))
+                        disjoint_set.union_sets(idx, idx_backward);
+                }
+            }
+        }
+
+    // Заполнение и объединение плоскости XY при k = 0
+    for (std::uint64_t j = 1; j < ny; ++j)
+        for (std::uint64_t i = 0; i < nx; ++i) {
+            std::uint64_t idx = i + j * nx;
+            if (cube.get(idx)) {
+                disjoint_set.make_set(idx);
+
+                if (i > 0) {
+                    std::uint64_t idx_left = idx - 1; 
+                    if (disjoint_set.count(idx_left))
+                        disjoint_set.union_sets(idx, idx_left);
+                }
+
+                std::uint64_t idx_up = idx - nx;
+                if (disjoint_set.count(idx_up))
+                    disjoint_set.union_sets(idx, idx_up);
+            }
+        }
+
+    // Заполнение и объединение плоскости YZ при i = 0
+    for (std::uint64_t k = 1; k < nz; ++k)
+        for (std::uint64_t j = 1; j < ny; ++j) {
+            std::uint64_t idx = j * nx + k * nx * ny;
+            if (cube.get(idx)) {
+                disjoint_set.make_set(idx);
+
+                std::uint64_t idx_up       = idx - nx;
+                std::uint64_t idx_backward = idx - nx * ny;
+
+                if (disjoint_set.count(idx_up))
+                    disjoint_set.union_sets(idx, idx_up);
+
+                if (disjoint_set.count(idx_backward))
+                    disjoint_set.union_sets(idx, idx_backward);
+            }
+        }
+
+    // Заполнение и объединение оставшейся части куба
+    for (std::uint64_t k = 1; k < nz; ++k)
+        for (std::uint64_t j = 1; j < ny; ++j)
+            for (std::uint64_t i = 1; i < nx; ++i) {
+                std::uint64_t idx = i + j * nx + k * nx * ny;
+                if (cube.get(idx)) {
+                    disjoint_set.make_set(idx);
+
+                    std::uint64_t idx_left     = idx - 1;
+                    std::uint64_t idx_up       = idx - nx;
+                    std::uint64_t idx_backward = idx - nx * ny;
+
+                    if (disjoint_set.count(idx_left))
+                        disjoint_set.union_sets(idx, idx_left);
+
+                    if (disjoint_set.count(idx_up))
+                        disjoint_set.union_sets(idx, idx_up);
+
+                    if (disjoint_set.count(idx_backward))
+                        disjoint_set.union_sets(idx, idx_backward);
+                }
             }
 }
