@@ -95,7 +95,7 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
                         if (disjoint_set.count(idx_left)) {
                             disjoint_set.union_sets(idx, idx_left);
                         } else {
-                            used[idx_right] = true;
+                            used[idx_left] = true;
                         }
                     }
 
@@ -103,7 +103,7 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
                         if (disjoint_set.count(idx_down)) {
                             disjoint_set.union_sets(idx, idx_down);
                         } else {
-                            used[idx_right] = true;
+                            used[idx_down] = true;
                         }
                     }
 
@@ -111,7 +111,7 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
                         if (disjoint_set.count(idx_up)) {
                             disjoint_set.union_sets(idx, idx_up);
                         } else {
-                            used[idx_right] = true;
+                            used[idx_up] = true;
                         }
                     }
 
@@ -119,7 +119,7 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
                         if (disjoint_set.count(idx_forward)) {
                             disjoint_set.union_sets(idx, idx_forward);
                         } else {
-                            used[idx_right] = true;
+                            used[idx_forward] = true;
                         }
                     }
 
@@ -127,7 +127,7 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
                         if (disjoint_set.count(idx_backward)) {
                             disjoint_set.union_sets(idx, idx_backward);
                         } else {
-                            used[idx_right] = true;
+                            used[idx_backward] = true;
                         }
                     }
                 }
