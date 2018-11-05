@@ -115,7 +115,7 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
                         }
                     }
 
-                    if (k < nz - 1 && used[idx_forward]) {
+                    if (k < nz - 1 && !used[idx_forward]) {
                         if (disjoint_set.count(idx_forward)) {
                             disjoint_set.union_sets(idx, idx_forward);
                         } else {
