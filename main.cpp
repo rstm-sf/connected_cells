@@ -1,6 +1,5 @@
-#include <iostream>
-
 #include <chrono>
+#include <iostream>
 #include <map>
 #include <set>
 #include <vector>
@@ -67,70 +66,25 @@ void union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
     const std::uint64_t nx = cube.get_nx();
     const std::uint64_t ny = cube.get_ny();
     const std::uint64_t nz = cube.get_nz();
-    const std::uint64_t size = nx * ny * nz;
-    std::vector<std::int8_t> used(size, false);
-
+    std::uint64_t idx{0};
     for (std::uint64_t k = 0; k < nz; ++k)
         for (std::uint64_t j = 0; j < ny; ++j)
             for (std::uint64_t i = 0; i < nx; ++i) {
-                std::uint64_t idx = i + j * nx + k * nx * ny;
+                
+                if (disjoint_set.count(idx)) {
+                    std::uint64_t idx_right   = idx + 1;
+                    std::uint64_t idx_down    = idx + nx;
+                    std::uint64_t idx_forward = idx + nx * ny;
 
-                if (!used[idx] && disjoint_set.count(idx)) {
-                    std::uint64_t idx_right    = idx + 1;
-                    std::uint64_t idx_left     = idx - 1;
-                    std::uint64_t idx_up       = idx - nx;
-                    std::uint64_t idx_down     = idx + nx;
-                    std::uint64_t idx_forward  = idx + nx * ny;
-                    std::uint64_t idx_backward = idx - nx * ny;
+                    if (disjoint_set.count(idx_right)   && i < nx - 1)
+                        disjoint_set.union_sets(idx, idx_right);
 
-                    if (i < nx - 1 && !used[idx_right]) {
-                        if (disjoint_set.count(idx_right)) {
-                            disjoint_set.union_sets(idx, idx_right);
-                        } else {
-                            used[idx_right] = true;
-                        }
-                    }
+                    if (disjoint_set.count(idx_down)    && j < ny - 1)
+                        disjoint_set.union_sets(idx, idx_down);
 
-                    if (i > 0      && !used[idx_left]) {
-                        if (disjoint_set.count(idx_left)) {
-                            disjoint_set.union_sets(idx, idx_left);
-                        } else {
-                            used[idx_left] = true;
-                        }
-                    }
-
-                    if (j < ny - 1 && !used[idx_down]) {
-                        if (disjoint_set.count(idx_down)) {
-                            disjoint_set.union_sets(idx, idx_down);
-                        } else {
-                            used[idx_down] = true;
-                        }
-                    }
-
-                    if (j > 0      && !used[idx_up]) {
-                        if (disjoint_set.count(idx_up)) {
-                            disjoint_set.union_sets(idx, idx_up);
-                        } else {
-                            used[idx_up] = true;
-                        }
-                    }
-
-                    if (k < nz - 1 && !used[idx_forward]) {
-                        if (disjoint_set.count(idx_forward)) {
-                            disjoint_set.union_sets(idx, idx_forward);
-                        } else {
-                            used[idx_forward] = true;
-                        }
-                    }
-
-                    if (k > 0      && !used[idx_backward]) {
-                        if (disjoint_set.count(idx_backward)) {
-                            disjoint_set.union_sets(idx, idx_backward);
-                        } else {
-                            used[idx_backward] = true;
-                        }
-                    }
+                    if (disjoint_set.count(idx_forward) && k < nz - 1)
+                        disjoint_set.union_sets(idx, idx_forward);
                 }
-                used[idx] = true;
+                ++idx;
             }
 }
