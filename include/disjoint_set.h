@@ -103,12 +103,16 @@ std::set<T> DisjointSet<T>::get_leaders() {
 template <class T>
 std::map<T, std::set<T>> DisjointSet<T>::get_areas() {
     std::map<T, std::set<T>> areas;
+    std::map<T, T> rename;
+    T i{1};
     for (auto const & kv : parent) {
         T leader = find_set(kv.first);
-        if (areas.count(leader)) {
-            areas[leader].insert(kv.first);
+        if (rename.count(leader)) {
+            areas[rename[leader]].insert(kv.first);
         } else {
-            areas.insert(std::make_pair(leader, std::set<T> {kv.second}));
+            rename.insert(std::make_pair(leader, i));
+            areas.insert(std::make_pair(i, std::set<T> {kv.first}));
+            ++i;
         } 
     }
     return areas;
