@@ -7,12 +7,37 @@
 #include "cube.h"
 #include "disjoint_set.h"
 
+/**
+    Создает систему непересекающиеся множеств упорядочных индексов связанных ячеек.
+
+    В ходе работы алгоритма куб обходится в порядке X->Y->Z.
+    Если ячейка имеет значение 1, то она добавляется в систему непересекающиеся
+    множеств и происходит проверка на связанность ячейки с уже пройденными
+    ячейками. Если ячейка связана с другой, то происходит объединение их в одно
+    множество.
+
+    @param disjoint_set DSU для индексов ячеек типа DisjointSet<std::uint64_t>.
+    @param cube         Куб типа Cube.
+    @see DisjointSet#make_set(), DisjointSet#union_sets()
+*/
 void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube);
 
+/**
+    Выводит таймеры измерения времени работы алгоритма нахождения
+    связанных ячеек в кубе размерности 400x250x300.
+
+    Первый таймер измеряет время потраченное на создание системы
+    непересекающихся множеств упорядоченных индексов связанных ячеек куба.
+
+    Второй таймер измеряет время потраченное на получение пронумерованных
+    множеств из созданной структуры данных.
+
+    В конце выводится сумма первого и второго измерения.
+*/
 int main() {
     using myclock_t = std::chrono::system_clock;
     using duration_t = std::chrono::duration<double>;
-    using map_areas_t = std::map<std::uint64_t, std::set<std::uint64_t>>;
+    using map_sets_t = std::map<std::uint64_t, std::set<std::uint64_t>>;
 
     Cube cube{};
     DisjointSet<std::uint64_t> disjoint_set{};
@@ -28,13 +53,13 @@ int main() {
     std::cout << "Time used: " << time1 << " (sec.)\n" << std::endl;
 
     // Получение множеств связанных индексов в виде map
-    std::cout << "Start get areas" << std::endl;
+    std::cout << "Start get sets" << std::endl;
     start = myclock_t::now();
 
-    map_areas_t areas {disjoint_set.get_areas()};
+    map_sets_t sets {disjoint_set.get_sets()};
 
     double time2 = duration_t(myclock_t::now() - start).count();
-    std::cout << "Stop get areas" << std::endl;
+    std::cout << "Stop get sets" << std::endl;
     std::cout << "Time used: " << time2 << " (sec.)\n" << std::endl;
 
 
@@ -49,7 +74,7 @@ void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
     const std::uint64_t ny = cube.get_ny();
     const std::uint64_t nz = cube.get_nz();
 
-    // Заполнение и объединение плоскости XZ при j = 0
+    // Создание и объединение множеств индексов из плоскости XZ при j = 0
     for (std::uint64_t k = 0; k < nz; ++k)
         for (std::uint64_t i = 0; i < nx; ++i) {
             std::uint64_t idx = i + k * nx * ny;
@@ -70,7 +95,7 @@ void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
             }
         }
 
-    // Заполнение и объединение плоскости XY при k = 0
+    // Создание и объединение множеств индексов из плоскости XY при k = 0
     for (std::uint64_t j = 1; j < ny; ++j)
         for (std::uint64_t i = 0; i < nx; ++i) {
             std::uint64_t idx = i + j * nx;
@@ -89,7 +114,7 @@ void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
             }
         }
 
-    // Заполнение и объединение плоскости YZ при i = 0
+    // Создание и объединение множеств индексов из плоскости YZ при i = 0
     for (std::uint64_t k = 1; k < nz; ++k)
         for (std::uint64_t j = 1; j < ny; ++j) {
             std::uint64_t idx = j * nx + k * nx * ny;
@@ -107,7 +132,7 @@ void make_union_sets(DisjointSet<std::uint64_t> & disjoint_set, Cube & cube) {
             }
         }
 
-    // Заполнение и объединение оставшейся части куба
+    // Создание и объединение множеств индексов из оставшейся части куба
     for (std::uint64_t k = 1; k < nz; ++k)
         for (std::uint64_t j = 1; j < ny; ++j)
             for (std::uint64_t i = 1; i < nx; ++i) {
