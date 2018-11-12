@@ -68,7 +68,7 @@ public:
         @return Значение ячейки типа bool.
         @throw std::runtime_error
     */
-    bool get(std::uint64_t x, std::uint64_t y, std::uint64_t z);
+    bool get(std::uint64_t x, std::uint64_t y, std::uint64_t z) const;
 
     /**
         Возвращает значение индекса ячейки в кубе по индексу.
@@ -79,28 +79,28 @@ public:
         @return Значение ячейки типа bool.
         @throw std::runtime_error
     */
-    bool get(std::uint64_t idx);
+    bool get(std::uint64_t idx) const;
 
     /**
         Возвращает количества ячеек в кубе вдоль оси X.
 
         @return Количество ячеек в кубе типа std::uint64_t.
     */
-    std::uint64_t get_nx();
+    std::uint64_t get_nx() const;
 
     /**
         Возвращает количества ячеек в кубе вдоль оси Y.
 
         @return Количество ячеек в кубе типа std::uint64_t.
     */
-    std::uint64_t get_ny();
+    std::uint64_t get_ny() const;
 
     /**
         Возвращает количества ячеек в кубе вдоль оси Z.
 
         @return Количество ячеек в кубе типа std::uint64_t.
     */
-    std::uint64_t get_nz();
+    std::uint64_t get_nz() const;
 
 private:
 
@@ -155,25 +155,29 @@ std::array<std::uint64_t, 3> Cube::get_ijk(std::uint64_t idx) {
     return std::array<std::uint64_t, 3> { {i, j, k} };
 }
 
-bool Cube::get(std::uint64_t i, std::uint64_t j, std::uint64_t k) {
-    return bool(data[get_idx(i, j, k)]);
+bool Cube::get(std::uint64_t i, std::uint64_t j, std::uint64_t k) const {
+    if (i >= nx) throw std::runtime_error{"illegal nx index"};
+    if (j >= ny) throw std::runtime_error{"illegal ny index"};
+    if (k >= nz) throw std::runtime_error{"illegal nz index"};
+    std::uint64_t idx = i + j * nx + k * nx * ny;
+    return bool(data[idx]);
 }
 
-bool Cube::get(std::uint64_t idx) {
+bool Cube::get(std::uint64_t idx) const {
     if (idx >= data.capacity())
         throw std::runtime_error{"illegal size index"};
     return bool(data[idx]);
 }
 
-std::uint64_t Cube::get_nx() {
+std::uint64_t Cube::get_nx() const {
     return nx;
 }
 
-std::uint64_t Cube::get_ny() {
+std::uint64_t Cube::get_ny() const {
     return ny;
 }
 
-std::uint64_t Cube::get_nz() {
+std::uint64_t Cube::get_nz() const {
     return nz;
 }
 
