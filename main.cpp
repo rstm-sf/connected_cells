@@ -4,8 +4,11 @@
 #include <set>
 #include <vector>
 
+#include "connected_cells.h"
 #include "cube.h"
 #include "disjoint_set.h"
+
+void perform_with_dfs();
 
 /**
     Выводит таймеры измерения времени работы алгоритма нахождения
@@ -41,6 +44,26 @@ int main() {
 
     return 0;
 }
+
+void perform_with_dfs() {
+    using myclock_t = std::chrono::system_clock;
+    using duration_t = std::chrono::duration<double>;
+
+    // TODO: https://stackoverflow.com/a/1825996
+    Cube cube{4, 4, 3};
+
+    std::chrono::time_point<myclock_t> start = myclock_t::now();
+    ConnectedCells connected_cells{ cube };
+    double time = duration_t(myclock_t::now() - start).count();
+    std::cout << "Time used: " << time << " (sec.)\n" << std::endl;
+
+    for (std::size_t i = 0; i < connected_cells.size(); ++i) {
+        for (auto const & cell : connected_cells.get_set(i))
+            std::cout << cell << ", ";
+        std::cout << std::endl;
+    }
+}
+
 
 void perform_with_disjoint_set() {
     using myclock_t = std::chrono::system_clock;
